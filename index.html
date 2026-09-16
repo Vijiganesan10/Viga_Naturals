@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Viga Naturals | Pure Nature. Beautiful You.</title>
+<meta name="description" content="Viga Naturals — herbal hair oil, hair masks, serums, shampoo and natural skin & body care crafted with traditional Ayurvedic ingredients." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link rel="icon" type="image/png" href="images/favicon_logo.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="home">
+<div id="app">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo">
+        <span class="logo-mark"><img src="images/viga_logo.png" alt="Viga Naturals"></span>
+        <span class="logo-text">Viga <span class="brand-light">Naturals</span><small>Pure Nature. Beautiful You.</small></span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html" class="active">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+      <div class="nav-actions">
+        <a v-if="!currentUser" href="login.html" class="icon-btn" title="Login"><i class="fa-solid fa-user"></i></a>
+        <a v-else href="profile.html" class="icon-btn" :title="'Signed in as ' + currentUser.name"><i class="fa-solid fa-circle-user"></i></a>
+        <button v-if="currentUser" class="icon-btn" @click="logout" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <a href="products.html" class="icon-btn" title="Search products"><i class="fa-solid fa-magnifying-glass"></i></a>
+        <button class="icon-btn" @click="toggleCart" title="View cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge" v-if="cartCount">{{ cartCount }}</span>
+        </button>
+        <button class="menu-toggle" @click="toggleMenu" title="Menu"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </div>
+    <nav class="mobile-nav" :class="{ open: mobileMenuOpen }">
+      <a href="index.html" class="active" @click="closeMenu">Home</a>
+      <a href="products.html" @click="closeMenu">Products</a>
+      <a href="about.html" @click="closeMenu">About</a>
+      <a href="contact.html" @click="closeMenu">Contact</a>
+    </nav>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <span class="hero-badge">🌿 100% Herbal &amp; Chemical Free</span>
+      <h1>Pure Nature. <span>Beautiful You.</span></h1>
+      <p>Herbal &amp; natural hair, skin and body care made with love — traditional Ayurvedic ingredients, no shortcuts, no harsh chemicals.</p>
+      <div class="hero-actions">
+        <a href="products.html" class="btn btn-primary">Shop Now</a>
+        <a href="about.html" class="btn btn-outline">Explore Our Story</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>25k+</b><span>Happy Customers</span></div>
+        <div class="stat"><b>12</b><span>Natural Products</span></div>
+        <div class="stat"><b>5+</b><span>Years of Craft</span></div>
+        <div class="stat"><b>4.8★</b><span>Average Rating</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SHOP BY CATEGORY ===================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Shop By Category</span>
+        <h2>Find Your Natural Ritual</h2>
+        <p>From root to tip, head to toe — herbal care for every part of your routine.</p>
+      </div>
+      <div class="category-grid">
+        <div class="category-card reveal" style="--cat-color:#eef5e9">
+          <div class="category-icon">💆‍♀️</div>
+          <h3>Hair Care</h3>
+          <p>Oils, masks, serums &amp; shampoo for stronger, shinier hair.</p>
+          <a href="products.html?category=hair-care">Shop Hair Care <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="category-card reveal" style="--cat-color:#fbf1de">
+          <div class="category-icon">🌸</div>
+          <h3>Skin Care</h3>
+          <p>Bathing powders &amp; face packs for naturally glowing skin.</p>
+          <a href="products.html?category=skin-care">Shop Skin Care <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="category-card reveal" style="--cat-color:#eef5e9">
+          <div class="category-icon">🧴</div>
+          <h3>Body Care</h3>
+          <p>Soaps, scrubs &amp; powders for soft, fresh, healthy skin.</p>
+          <a href="products.html?category=body-care">Shop Body Care <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BEST SELLERS ===================== -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Best Sellers</span>
+        <h2>Customer Favourites</h2>
+        <p>The herbal staples our customers keep coming back for.</p>
+      </div>
+      <div class="product-grid">
+        <div class="product-card reveal" v-for="p in bestSellers" :key="p.id">
+          <span class="badge">Best Seller</span>
+          <button class="like-btn" :class="{ liked: isLiked(p.id) }" @click="toggleLike(p.id)" :title="isLiked(p.id) ? 'Remove from liked' : 'Add to liked'">
+            <i :class="isLiked(p.id) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+          </button>
+          <a :href="'product-details.html?id=' + p.id" class="product-visual">
+            <img v-if="p.img" :src="p.img" :alt="p.name" loading="lazy" />
+            <span v-else>{{ p.icon }}</span>
+          </a>
+          <div class="product-body">
+            <span class="product-cat">{{ p.categoryLabel }}</span>
+            <h3><a :href="'product-details.html?id=' + p.id">{{ p.name }}</a></h3>
+            <div class="product-rating">
+              <i class="fa-solid fa-star"></i> {{ p.rating }} <span>({{ p.reviews }})</span>
+            </div>
+            <div class="product-price">
+              <span class="price-now">{{ formatPrice(p.price) }}</span>
+              <span class="price-old">{{ formatPrice(p.oldPrice) }}</span>
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="btn btn-primary btn-sm btn-block" @click="addToCart(p.id)">
+              <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-40 reveal">
+        <a href="products.html" class="btn btn-outline">View All Products</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== WHY CHOOSE US ===================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Why Viga Naturals</span>
+        <h2>Why Choose Viga Naturals</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card reveal">
+          <div class="why-icon">🌿</div>
+          <h4>Natural Ingredients</h4>
+          <p>Only plant-based, Ayurveda-inspired ingredients — nothing synthetic.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon">🧪</div>
+          <h4>No Harsh Chemicals</h4>
+          <p>Free from sulphates, parabens and mineral oil, always.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon">❤️</div>
+          <h4>Handmade with Care</h4>
+          <p>Small-batch crafted for freshness and quality you can feel.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon">♻️</div>
+          <h4>Eco Friendly</h4>
+          <p>Sustainably sourced ingredients and recyclable packaging.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== INGREDIENTS ===================== -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Straight From Nature</span>
+        <h2>Ingredients We Love</h2>
+        <p>Every formula is built around time-tested herbs and botanicals.</p>
+      </div>
+      <div class="ingredients-grid">
+        <div class="ingredient-pill reveal"><div class="why-icon">🌿</div><h5>Bhringraj</h5></div>
+        <div class="ingredient-pill reveal"><div class="why-icon">🍋</div><h5>Amla</h5></div>
+        <div class="ingredient-pill reveal"><div class="why-icon">🌹</div><h5>Rose Petals</h5></div>
+        <div class="ingredient-pill reveal"><div class="why-icon">🌱</div><h5>Rosemary</h5></div>
+        <div class="ingredient-pill reveal"><div class="why-icon">🟡</div><h5>Turmeric</h5></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CUSTOMER REVIEWS ===================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Testimonials</span>
+        <h2>Customer Reviews</h2>
+        <p>Real experiences from our herbal care community.</p>
+      </div>
+      <div class="review-grid">
+        <div class="review-card reveal" v-for="t in testimonials.slice(0,3)" :key="t.name">
+          <div class="review-stars">
+            <i class="fa-solid fa-star" v-for="n in t.rating" :key="n"></i>
+          </div>
+          <p>&ldquo;{{ t.text }}&rdquo;</p>
+          <div class="review-author">
+            <div class="review-avatar">{{ t.initial }}</div>
+            <b>{{ t.name }}</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== GALLERY ===================== -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">@viganaturals</span>
+        <h2>From Our Studio</h2>
+      </div>
+      <div class="gallery-grid">
+        <figure class="gallery-tile reveal" v-for="(g,i) in gallery" :key="i">
+          <span>{{ g.icon }}</span>
+          <figcaption>{{ g.caption }}</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== NEWSLETTER ===================== -->
+  <section class="section">
+    <div class="container">
+      <div class="newsletter reveal">
+        <div>
+          <h3>Join the Herbal Circle</h3>
+          <p>Get natural care tips, early access &amp; special offers in your inbox.</p>
+        </div>
+        <form class="newsletter-form" @submit.prevent="submitNewsletter" v-if="!newsletterSubmitted">
+          <input type="email" v-model="newsletterEmail" placeholder="Enter your email" required />
+          <button type="submit" class="btn btn-light">Subscribe</button>
+        </form>
+        <div class="newsletter-success" v-else>✓ Thank you for subscribing!</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CART DRAWER ===================== -->
+  <div class="cart-overlay" :class="{ open: cartOpen }" @click="toggleCart"></div>
+  <aside class="cart-drawer" :class="{ open: cartOpen }">
+    <div class="cart-head">
+      <h3>Your Cart</h3>
+      <button class="cart-close" @click="toggleCart"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="cart-items">
+      <div class="cart-empty" v-if="!cart.length">
+        <span>🛍️</span>
+        <p>Your cart is empty</p>
+      </div>
+      <div class="cart-item" v-for="item in cart" :key="item.id">
+        <div class="cart-item-visual">
+          <img v-if="item.img" :src="item.img" :alt="item.name" />
+          <span v-else>{{ item.icon }}</span>
+        </div>
+        <div class="cart-item-info">
+          <h5>{{ item.name }}</h5>
+          <div class="cart-item-price">{{ formatPrice(item.price) }}</div>
+          <div class="qty-control">
+            <button @click="decQty(item.id)">−</button>
+            <span>{{ item.qty }}</span>
+            <button @click="incQty(item.id)">+</button>
+          </div>
+        </div>
+        <button class="cart-item-remove" @click="removeFromCart(item.id)"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="cart-foot" v-if="cart.length">
+      <div class="cart-total-row"><span>Total</span><span>{{ formatPrice(cartTotal) }}</span></div>
+      <a :href="whatsappLink('Hi Viga Naturals, I would like to order: ' + cart.map(i => i.name + ' x' + i.qty).join(', '))" target="_blank" rel="noopener" class="btn btn-primary btn-block">
+        <i class="fa-brands fa-whatsapp"></i> Checkout via WhatsApp
+      </a>
+    </div>
+  </aside>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo"><span class="logo-mark"><img src="images/viga_logo.png" alt="Viga Naturals"></span> Viga <span class="brand-light">Naturals</span></a>
+          <p>Herbal &amp; natural hair and skin care, crafted the traditional way with ingredients you can pronounce.</p>
+          <div class="footer-tagline">"Pure Nature. Beautiful You."</div>
+        </div>
+        <div class="footer-col">
+          <h5>Shop</h5>
+          <ul>
+            <li><a href="products.html?category=hair-care">Hair Care</a></li>
+            <li><a href="products.html?category=skin-care">Skin Care</a></li>
+            <li><a href="products.html?category=body-care">Body Care</a></li>
+            <li><a href="products.html">All Products</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Company</h5>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="#">Shipping Policy</a></li>
+            <li><a href="#">Return Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Stay Connected</h5>
+          <p style="font-size:.88rem;color:rgba(255,255,255,.72)">Follow us for herbal tips &amp; offers.</p>
+          <div class="footer-social">
+            <a href="#" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+            <a :href="whatsappLink()" target="_blank" rel="noopener" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Viga Naturals — Pure Nature. Beautiful You. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <a :href="whatsappLink()" target="_blank" rel="noopener" class="whatsapp-float" title="Chat on WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Product Details | Viga Naturals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link rel="icon" type="image/png" href="images/favicon_logo.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="product-detail">
+<div id="app">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo">
+        <span class="logo-mark"><img src="images/viga_logo.png" alt="Viga Naturals"></span>
+        <span class="logo-text">Viga <span class="brand-light">Naturals</span><small>Pure Nature. Beautiful You.</small></span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="products.html" class="active">Products</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+      <div class="nav-actions">
+        <a v-if="!currentUser" href="login.html" class="icon-btn" title="Login"><i class="fa-solid fa-user"></i></a>
+        <a v-else href="profile.html" class="icon-btn" :title="'Signed in as ' + currentUser.name"><i class="fa-solid fa-circle-user"></i></a>
+        <button v-if="currentUser" class="icon-btn" @click="logout" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <button class="icon-btn" @click="toggleCart" title="View cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge" v-if="cartCount">{{ cartCount }}</span>
+        </button>
+        <button class="menu-toggle" @click="toggleMenu" title="Menu"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </div>
+    <nav class="mobile-nav" :class="{ open: mobileMenuOpen }">
+      <a href="index.html" @click="closeMenu">Home</a>
+      <a href="products.html" class="active" @click="closeMenu">Products</a>
+      <a href="about.html" @click="closeMenu">About</a>
+      <a href="contact.html" @click="closeMenu">Contact</a>
+    </nav>
+  </header>
+
+  <!-- ===================== BREADCRUMB ===================== -->
+  <section class="page-banner" style="padding: 26px 0; text-align:left;">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a> / <a href="products.html">Products</a> / {{ product.name }}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRODUCT DETAIL ===================== -->
+  <section class="section" style="padding-top:36px;">
+    <div class="container">
+      <div class="detail-grid">
+        <div class="detail-visual">
+          <button class="like-btn" :class="{ liked: isLiked(product.id) }" @click="toggleLike(product.id)" :title="isLiked(product.id) ? 'Remove from liked' : 'Add to liked'">
+            <i :class="isLiked(product.id) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+          </button>
+          <img v-if="product.img" :src="product.img" :alt="product.name" />
+          <span v-else>{{ product.icon }}</span>
+        </div>
+        <div class="detail-info">
+          <span class="detail-cat">{{ product.categoryLabel }}</span>
+          <h1>{{ product.name }}</h1>
+          <p class="detail-tagline">{{ product.tagline }}</p>
+          <div class="product-rating" style="margin-bottom:16px;">
+            <i class="fa-solid fa-star"></i> {{ product.rating }} <span>({{ product.reviews }} reviews)</span>
+          </div>
+          <div class="detail-price">
+            <span class="price-now">{{ formatPrice(product.price) }}</span>
+            <span class="price-old">{{ formatPrice(product.oldPrice) }}</span>
+            <span class="discount-tag">Save {{ Math.round((1 - product.price / product.oldPrice) * 100) }}%</span>
+          </div>
+
+          <div class="qty-row">
+            <div class="qty-selector">
+              <button @click="decreaseQty">−</button>
+              <span>{{ qty }}</span>
+              <button @click="increaseQty">+</button>
+            </div>
+          </div>
+
+          <div class="added-toast" v-if="addedMessage">✓ Added {{ qty }} × {{ product.name }} to your cart</div>
+
+          <div class="detail-actions">
+            <button class="btn btn-primary" @click="addCurrentToCart">
+              <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+            <a :href="whatsappLink('Hi Viga Naturals, I am interested in ' + product.name)" target="_blank" rel="noopener" class="btn btn-outline">
+              <i class="fa-brands fa-whatsapp"></i> Ask on WhatsApp
+            </a>
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn" :class="{ active: activeTab === 'description' }" @click="activeTab = 'description'">Description</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'ingredients' }" @click="activeTab = 'ingredients'">Ingredients</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'benefits' }" @click="activeTab = 'benefits'">Benefits</button>
+          </div>
+          <div class="tab-panel">
+            <p v-if="activeTab === 'description'">{{ product.description }}</p>
+            <ul v-if="activeTab === 'ingredients'">
+              <li v-for="ing in product.ingredients" :key="ing">{{ ing }}</li>
+            </ul>
+            <ul v-if="activeTab === 'benefits'">
+              <li v-for="b in product.benefits" :key="b">{{ b }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== RELATED PRODUCTS ===================== -->
+  <section class="section section-alt" v-if="relatedProducts.length">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">You May Also Like</span>
+        <h2>Related Products</h2>
+      </div>
+      <div class="product-grid">
+        <div class="product-card reveal" v-for="p in relatedProducts" :key="p.id">
+          <span class="badge" v-if="p.bestSeller">Best Seller</span>
+          <button class="like-btn" :class="{ liked: isLiked(p.id) }" @click="toggleLike(p.id)" :title="isLiked(p.id) ? 'Remove from liked' : 'Add to liked'">
+            <i :class="isLiked(p.id) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+          </button>
+          <a :href="'product-details.html?id=' + p.id" class="product-visual">
+            <img v-if="p.img" :src="p.img" :alt="p.name" loading="lazy" />
+            <span v-else>{{ p.icon }}</span>
+          </a>
+          <div class="product-body">
+            <span class="product-cat">{{ p.categoryLabel }}</span>
+            <h3><a :href="'product-details.html?id=' + p.id">{{ p.name }}</a></h3>
+            <div class="product-rating">
+              <i class="fa-solid fa-star"></i> {{ p.rating }} <span>({{ p.reviews }})</span>
+            </div>
+            <div class="product-price">
+              <span class="price-now">{{ formatPrice(p.price) }}</span>
+              <span class="price-old">{{ formatPrice(p.oldPrice) }}</span>
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="btn btn-primary btn-sm btn-block" @click="addToCart(p.id)">
+              <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CART DRAWER ===================== -->
+  <div class="cart-overlay" :class="{ open: cartOpen }" @click="toggleCart"></div>
+  <aside class="cart-drawer" :class="{ open: cartOpen }">
+    <div class="cart-head">
+      <h3>Your Cart</h3>
+      <button class="cart-close" @click="toggleCart"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="cart-items">
+      <div class="cart-empty" v-if="!cart.length">
+        <span>🛍️</span>
+        <p>Your cart is empty</p>
+      </div>
+      <div class="cart-item" v-for="item in cart" :key="item.id">
+        <div class="cart-item-visual">
+          <img v-if="item.img" :src="item.img" :alt="item.name" />
+          <span v-else>{{ item.icon }}</span>
+        </div>
+        <div class="cart-item-info">
+          <h5>{{ item.name }}</h5>
+          <div class="cart-item-price">{{ formatPrice(item.price) }}</div>
+          <div class="qty-control">
+            <button @click="decQty(item.id)">−</button>
+            <span>{{ item.qty }}</span>
+            <button @click="incQty(item.id)">+</button>
+          </div>
+        </div>
+        <button class="cart-item-remove" @click="removeFromCart(item.id)"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="cart-foot" v-if="cart.length">
+      <div class="cart-total-row"><span>Total</span><span>{{ formatPrice(cartTotal) }}</span></div>
+      <a :href="whatsappLink('Hi Viga Naturals, I would like to order: ' + cart.map(i => i.name + ' x' + i.qty).join(', '))" target="_blank" rel="noopener" class="btn btn-primary btn-block">
+        <i class="fa-brands fa-whatsapp"></i> Checkout via WhatsApp
+      </a>
+    </div>
+  </aside>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo"><span class="logo-mark"><img src="images/viga_logo.png" alt="Viga Naturals"></span> Viga <span class="brand-light">Naturals</span></a>
+          <p>Herbal &amp; natural hair and skin care, crafted the traditional way with ingredients you can pronounce.</p>
+          <div class="footer-tagline">"Pure Nature. Beautiful You."</div>
+        </div>
+        <div class="footer-col">
+          <h5>Shop</h5>
+          <ul>
+            <li><a href="products.html?category=hair-care">Hair Care</a></li>
+            <li><a href="products.html?category=skin-care">Skin Care</a></li>
+            <li><a href="products.html?category=body-care">Body Care</a></li>
+            <li><a href="products.html">All Products</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Company</h5>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="#">Shipping Policy</a></li>
+            <li><a href="#">Return Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Stay Connected</h5>
+          <p style="font-size:.88rem;color:rgba(255,255,255,.72)">Follow us for herbal tips &amp; offers.</p>
+          <div class="footer-social">
+            <a href="#" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+            <a :href="whatsappLink()" target="_blank" rel="noopener" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Viga Naturals — Pure Nature. Beautiful You. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <a :href="whatsappLink()" target="_blank" rel="noopener" class="whatsapp-float" title="Chat on WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
